@@ -8,6 +8,9 @@ build_requires 'Test::More';
 build_requires 'ex::lib';
 
 requires 'Encode';
+requires 'LWP::UserAgent';
+requires 'Time::HiRes';
+requires 'Scalar::Util';
 
 auto_install;
 

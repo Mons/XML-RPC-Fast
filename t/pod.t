@@ -1,12 +1,14 @@
-#!perl -T
+#!/usr/bin/perl -w
 
 use strict;
-use warnings;
 use Test::More;
+use ex::lib '../lib';
+use XML::RPC::Fast;
 
 # Ensure a recent version of Test::Pod
 my $min_tp = 1.22;
 eval "use Test::Pod $min_tp";
-plan skip_all => "Test::Pod $min_tp required for testing POD" if $@;
+$@ and plan skip_all => "Test::Pod $min_tp required for testing POD";
+plan tests => 1;
 
-all_pod_files_ok();
+pod_file_ok($INC{ 'XML/RPC/Fast.pm' });

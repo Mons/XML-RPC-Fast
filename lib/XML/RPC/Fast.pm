@@ -12,7 +12,7 @@ XML::RPC::Fast - Faster implementation for an XML-RPC client and server (based o
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =head1 SYNOPSIS
 
@@ -115,7 +115,7 @@ BEGIN {
 sub DEBUG_TIMES ()    { 0 }
 sub DEBUG_ENCODING () { 0 }
 
-our $VERSION   = 0.1; # Based on XML::RPC 0.8
+our $VERSION   = 0.02; # Based on XML::RPC 0.8
 our $faultCode = 0;
 our $FAULTY    = 1;
 
@@ -161,6 +161,7 @@ sub local_call_receive {
 sub call {
 	my $self = shift;
 	my ( $methodname, @params ) = @_;
+    @$self{qw(xml_in xml_out)} = (undef)x2;
 
 	$self->croak('no url: %s',$self->{url}) unless $self->{url};
 
@@ -176,7 +177,7 @@ sub call {
 		'Content-Length' => length($body)
 	};
 	$self->{useragent} ||= do {
-		my $ua = LWP::UserAgent->new();
+		my $ua = LWP::UserAgent->new( exists $self->{lwp_param} ?  %{$self->{lwp_param}} : requests_redirectable => ['POST'] );
 		$ua->timeout( exists $self->{timeout} ? $self->{timeout} : 10);
 		$ua->env_proxy();
 		$ua->agent( $self->{__user_agent} ) if defined $self->{__user_agent};
@@ -194,9 +195,10 @@ sub call {
 	( my $status = $res->status_line )=~ s/:?\s*$//s;
 	$res->code == 200 or $self->croak( "Call to $self->{url}#$methodname error %s: %s",$res->code,$status );
 	my $text = $res->content();
+    length($text) and $text =~ /^\s*<\?xml/s or $self->croak( "Call to $self->{url}#$methodname error: response is not an XML: \"$text\"" );
+	$self->{xml_in} = $text;
 	my $tree = $self->parse_xml( \$text );
 
-	$self->{xml_in} = $text;
 
 	my @data = $self->unparse_response($tree);
 	$self->croak( "Remote Error: ".$data[0]{faultString} ) if ref $data[0] eq 'HASH' and exists $data[0]{faultString} and exists $data[0]{faultCode};
@@ -234,12 +236,12 @@ sub create_call_xml {
 	my ( $methodname, @params ) = @_;
 
 	return $self->compose_xml(
-		{
+		sub {+{
 			methodCall => {
 				methodName => $methodname,
 				params     => { param => [ map { $self->parse($_) } @params ] }
 			}
-		}
+		}}
 	);
 }
 
@@ -284,9 +286,6 @@ sub parse_scalar {
 	elsif ( $scalar =~ m/^[\-+]?\d+\.\d+$/ ) {
 		return { double => $scalar };
 	}
-	elsif ( ref $scalar and UNIVERSAL::isa($scalar,'Class::Declare') ) {
-		return $self->parse_class_declare( $scalar );
-	}
 #	elsif( utf8::is_utf8($scalar) ) {
 #		return { string => $scalar };
 #	}
@@ -295,26 +294,19 @@ sub parse_scalar {
 	}
 }
 
-sub parse_class_declare {
-	my $self = shift;
-	my $obj  = shift;
-	my $hash = {};
-	require AGAVA::AGE::Framework::Library::Class::ClassDeclareHack;
-	#warn "$obj isa Class::Declare\n";
-	$hash = {};
-	for ($obj->fields) {
-		#warn "$_ = ".$obj->$_."\n";
-		$hash->{$_} = $obj->$_;
-	}
-	#return {class => $hash};
-	return { struct => { member => [ map { { name => $_, %{ $self->parse( $hash->{$_} ) } } } keys(%$hash) ] } };
-}
-
 sub parse_struct {
 	my $self = shift;
 	my $hash = shift;
-
-	return { struct => { member => [ map { { name => $_, %{ $self->parse( $hash->{$_} ) } } } keys(%$hash) ] } };
+	return {
+		struct => {
+			member => [
+				map { +{
+					( $_ eq $self->{text_node_key} ? () : ( name => $_ ) ),
+					%{ $self->parse( $hash->{$_} ) }
+				} } keys %$hash
+			]
+		}
+	};
 }
 
 sub parse_array {
@@ -445,6 +437,7 @@ sub compose_xml {
 		$self->{__indent} = ' ' x $self->{indent};
 	}
 	my $start = time;
+	$tree = $tree->() if ref $tree eq 'CODE';
 	my $text = $self->hash_to_xml( undef, $tree );
 	warn sprintf "xml of length %d created in %0.3fs\n",length($text),time - $start if DEBUG_TIMES;
 	
@@ -467,6 +460,7 @@ sub hash_to_xml {
 	my $self      = shift;
 	my $name      = shift;
 	my $hash      = shift;
+	defined $self->{text_node_key} and length $self->{text_node_key} or warn "TextNodeKey not defined inside hash_to_xml";
 	#warn ("hash_to_xml(".Data::Dumper::Dumper($hash).")\n");
 	#ref $hash eq 'HASH' or warn ("hash_to_xml(".Data::Dumper::Dumper($hash).")\n"),croak("Not a HASH: $hash");
 	my $out       = [];
@@ -507,6 +501,7 @@ sub hash_to_xml {
 				push( @$out, $child );
 			}
 			else {
+				#warn "$key => $val: ".$self->scalar_to_xml( $key, $val )."\n";
 				my $child = $self->scalar_to_xml( $key, $val );
 				push( @$out, $child );
 			}

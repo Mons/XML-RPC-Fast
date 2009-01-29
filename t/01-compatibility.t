@@ -1,5 +1,6 @@
-#!perl -T
+#!/usr/bin/perl -w
 
+use ex::lib '../lib';
 use XML::RPC::Fast;
 use Test::More;
 
