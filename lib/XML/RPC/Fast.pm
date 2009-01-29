@@ -12,7 +12,7 @@ XML::RPC::Fast - Faster implementation for an XML-RPC client and server (based o
 
 =head1 VERSION
 
-Version 0.02
+Version 0.2
 
 =head1 SYNOPSIS
 
@@ -73,7 +73,7 @@ Specify the encoding, used inside XML container. By default it's utf-8; Uses Enc
 =head2 no_xml_parser
 
 Specific option. If set, Use XML::TreePP for XML parsing, instead of XML::Parser in some place.
-But why then you need this module? XML::Parser does the same.
+But why then you need this module? XML::RPC does the same.
 
 =head1 BUGS
 
@@ -83,7 +83,7 @@ See L<http://rt.cpan.org> to report and view bugs.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2008 Mons Anderson, all rights reserved.
+Copyright (c) 2008-2009 Mons Anderson.
 Based on C<XML::RPC> v0.8 (c) 2007-2008 Niek Albers
 
 This program is free software; you can redistribute it and/or modify it
@@ -96,7 +96,13 @@ Mons Anderson, C<< <mons@cpan.org> >>
 =cut
 
 use strict;
-use Encode ();
+BEGIN {
+	if( $] >= 5.007003 ) {
+		require Encode;
+	} else {
+		require Text::Iconv;
+	}
+}
 use Scalar::Util ();
 
 use XML::Parser;
@@ -115,7 +121,7 @@ BEGIN {
 sub DEBUG_TIMES ()    { 0 }
 sub DEBUG_ENCODING () { 0 }
 
-our $VERSION   = 0.02; # Based on XML::RPC 0.8
+our $VERSION   = 0.2; # Based on XML::RPC 0.8
 our $faultCode = 0;
 our $FAULTY    = 1;
 
