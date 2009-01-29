@@ -1,0 +1,81 @@
+NAME
+    XML::RPC::Fast - Faster implementation for an XML-RPC client and server
+    (based on XML::RPC)
+
+VERSION
+    Version 0.01
+
+SYNOPSIS
+    Generic usage
+
+            use XML::RPC::Fast;
+        
+            my $server = XML::RPC::Fast->new( undef, [ %PARAMS ] );
+            my $client = XML::RPC::Fast->new( $uri, [ %PARAMS ] );
+
+    Create a simple XML-RPC service:
+
+            use XML::RPC::Fast;
+        
+            my $rpc = XML::RPC::Fast->new(
+                    undef, # the url is not required by server
+                    external_encoding => 'utf8',
+                    internal_encoding => 'koi8r', # any encoding, accepted by Encode
+            );
+            my $xml = do { local $/; <STDIN> };
+            length($xml) == $ENV{CONTENT_LENGTH} or warn "Content-Length differs from actually received";
+        
+            print "Content-type: text/xml; charset: utf-8\n\n";
+            print $rpc->receive( $xml, sub {
+                    my ( $methodname, @params ) = @_;
+                    return { you_called => $methodname, with_params => \@params };
+            } );
+
+    Make a call to an XML-RPC service:
+
+            use XML::RPC::Fast;
+        
+            my $rpc = XML::RPC::Fast->new(
+                    'http://your.hostname/rpc/url'
+                    internal_encoding => 'koi8r', # any encoding, accepted by Encode
+            );
+            my $result = $rpc->call( 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
+
+DESCRIPTION
+    XML::RPC::Fast doing the same as XML::RPC does, but uses XML::Parser to
+    parse xml, so it is faster on big data structures. The supported options
+    is almost the same, as XML::RPC have, so refer to its documentation.
+    There are also have been made beautifications in error handling. Errors
+    in this module is more verbose and self-descriptive. Below are list of
+    options, that are differs from XML::RPC and XML::TreePP;
+
+SPECIFIC OPTIONS
+  internal_encoding
+    Specify the encoding you are using in your code. By default option is
+    undef, which means flagged utf-8 For translations is used Encode, so the
+    list of accepted encodings fully derived from it.
+
+  external_encoding
+    Specify the encoding, used inside XML container. By default it's utf-8;
+    Uses Encode for translations.
+
+  no_xml_parser
+    Specific option. If set, Use XML::TreePP for XML parsing, instead of
+    XML::Parser in some place. But why then you need this module?
+    XML::Parser does the same.
+
+BUGS
+    Bugs reports and testcases are welcome.
+
+    See <http://rt.cpan.org> to report and view bugs.
+
+COPYRIGHT & LICENSE
+    Copyright (c) 2008 Mons Anderson, all rights reserved.
+    Based on "XML::RPC" v0.8 (c) 2007-2008 Niek Albers
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+AUTHOR
+    Mons Anderson, "<mons@cpan.org>"
+
