@@ -12,7 +12,7 @@ XML::RPC::Fast - Faster implementation for an XML-RPC client and server (based o
 
 =head1 VERSION
 
-Version 0.2
+Version 0.3
 
 =head1 SYNOPSIS
 
@@ -121,7 +121,7 @@ BEGIN {
 sub DEBUG_TIMES ()    { 0 }
 sub DEBUG_ENCODING () { 0 }
 
-our $VERSION   = 0.2; # Based on XML::RPC 0.8
+our $VERSION   = 0.3; # Based on XML::RPC 0.8
 our $faultCode = 0;
 our $FAULTY    = 1;
 

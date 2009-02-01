@@ -19,6 +19,7 @@ requires 'Encode';
 requires 'LWP::UserAgent';
 requires 'Time::HiRes';
 requires 'Scalar::Util';
+requires 'XML::Parser', '2.36';
 
 auto_install;
 

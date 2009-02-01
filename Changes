@@ -1,5 +1,8 @@
 # XML::RPC::Fast history
 
+2009-02-01 (0.3)
+	* Fix broken dependency on XML::Parser
+
 2009-01-29 (0.2)
 	* add lwp_options, fix requests_redirectable by default
 	* minor fixes of parsing/deparsing
