@@ -1,16 +1,45 @@
---- #YAML:1.0
-name:                XML-RPC-Fast
-version:             0.1
-abstract:            Faster implementation for an XML-RPC client and server (based on XML::RPC)
-license:             ~
-author:              
-    - Mons Anderson <mons@cpan.org>
-generated_by:        ExtUtils::MakeMaker version 6.44
-distribution_type:   module
-requires:     
-    LWP::UserAgent:                0
-    Test::More:                    0
-    XML::Parser:                   0
+---
+abstract: 'Fast and modular implementation for an XML-RPC client and server'
+author:
+  - 'Mons Anderson <mons@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0
+  Test::NoWarnings: 0
+  lib::abs: 0.90
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 0.91'
+license: perl
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: XML-RPC-Fast
+no_index:
+  directory:
+    - inc
+    - t
+    - xt
+provides:
+  XML::RPC::Enc::LibXML:
+    file: lib/XML/RPC/Enc/LibXML.pm
+    version: 0.4
+  XML::RPC::Fast:
+    file: lib/XML/RPC/Fast.pm
+    version: 0.4
+  XML::RPC::UA::LWP:
+    file: lib/XML/RPC/UA/LWP.pm
+    version: 0.4
+recommends:
+  DateTime::Format::ISO8601: 0
+  MIME::Base64: 0
+  Sub::Name: 0
+requires:
+  LWP::UserAgent: 0
+  XML::Hash::LX: 0
+  XML::LibXML: 0
+  perl: 5.8.3
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.4

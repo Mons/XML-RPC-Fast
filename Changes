@@ -1,12 +1,16 @@
 # XML::RPC::Fast history
 
-2009-02-01 (0.3)
-	* Fix broken dependency on XML::Parser
+0.4   2009-08-28 (0.4)
+      * Make modular encoder and useragent
+      * Use XML::LibXML instead of XML::Parser
 
-2009-01-29 (0.2)
-	* add lwp_options, fix requests_redirectable by default
-	* minor fixes of parsing/deparsing
-	* fix dependency on Encode
+0.3   2009-02-01
+      * Fix broken dependency on XML::Parser
 
-2008-10-24 (0.1)
-	* First release
+0.2   2009-01-29
+      * add lwp_options, fix requests_redirectable by default
+      * minor fixes of parsing/deparsing
+      * fix dependency on Encode
+
+0.1   2008-10-24
+      * First release

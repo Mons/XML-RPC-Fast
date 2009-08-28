@@ -1,22 +1,25 @@
 #!/usr/bin/perl -w
 
-use ex::lib '../lib';
+use strict;
+use lib::abs '../lib';
 use XML::RPC::Fast;
 use Test::More;
+use Test::NoWarnings;
 
-my $ver = '0.8';
-eval "use XML::RPC $ver";
-plan skip_all => "XML::RPC $ver required for testing compatibility" if $@;
+eval "use XML::RPC 0.8;1" or plan skip_all => "XML::RPC 0.8 required for testing compatibility";
 plan tests => 2;
 
 my $r = XML::RPC->new();
-my $hash = [ { name => 'rec', entries => { name => 'ent', fields => [] } } ];
+my $hash = [
+	{
+		name => 'rec',
+		entries => {
+			name => 'ent',
+			fields => [ a => 1 ]
+		},
+	}
+];
 my $xml = $r->create_call_xml(test => $hash);
-my $hml = $r->{tpp}->parse($xml);
-my @in = $r->unparse_call($hml);
-my $f = XML::RPC::Fast->new();
-my $f_hml = $f->parse_xml($xml);
-is_deeply($hml,$f_hml, 'hash struct');
-my @f_in  = $f->unparse_call($hml);
+my @in = $r->unparse_call( $r->{tpp}->parse($xml) );
+my @f_in  = XML::RPC::Fast->new()->encoder->decode($xml);
 is_deeply(\@in,\@f_in, 'args struct');
-

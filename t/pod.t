@@ -1,14 +1,20 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 use strict;
 use Test::More;
-use ex::lib '../lib';
-use XML::RPC::Fast;
+use lib::abs "../lib";
+BEGIN {
+	my $lib = lib::abs::path( ".." );
+	chdir $lib or plan skip_all => "Can't chdir to dist $lib";
+}
 
 # Ensure a recent version of Test::Pod
-my $min_tp = 1.22;
-eval "use Test::Pod $min_tp";
-$@ and plan skip_all => "Test::Pod $min_tp required for testing POD";
-plan tests => 1;
+eval "use Test::Pod 1.22; 1"
+	or plan skip_all => "Test::Pod 1.22 required for testing POD";
+eval "use File::Find; 1"
+	or plan skip_all => "File::Find required for testing POD";
 
-pod_file_ok($INC{ 'XML/RPC/Fast.pm' });
+all_pod_files_ok();
+
+exit 0;
+require Test::NoWarnings;
