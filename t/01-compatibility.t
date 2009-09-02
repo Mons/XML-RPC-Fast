@@ -4,10 +4,11 @@ use strict;
 use lib::abs '../lib';
 use XML::RPC::Fast;
 use Test::More;
+BEGIN {
+	eval "use XML::RPC 0.8;1" or plan skip_all => "XML::RPC 0.8 required for testing compatibility";
+	plan tests => 2;
+}
 use Test::NoWarnings;
-
-eval "use XML::RPC 0.8;1" or plan skip_all => "XML::RPC 0.8 required for testing compatibility";
-plan tests => 2;
 
 my $r = XML::RPC->new();
 my $hash = [
