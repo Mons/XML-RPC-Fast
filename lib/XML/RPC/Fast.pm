@@ -12,11 +12,11 @@ XML::RPC::Fast - Fast and modular implementation for an XML-RPC client and serve
 
 =head1 VERSION
 
-Version 0.4
+Version 0.5
 
 =cut
 
-our $VERSION   = '0.4';
+our $VERSION   = '0.5';
 
 =head1 SYNOPSIS
 
@@ -54,9 +54,23 @@ Make a call to an XML-RPC service:
     );
     
     # Syncronous call
+    my @result = $rpc->req(
+        call => [ 'examples.getStateStruct', { state1 => 12, state2 => 28 } ],
+        url => 'http://...',
+    );
+    
+    # Syncronous call (compatibility method)
     my @result = $rpc->call( 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
-
+    
     # Syncronous or asyncronous call
+    $rpc->req(
+        call => ['examples.getStateStruct', { state1 => 12, state2 => 28 }],
+        cb   => sub {
+            my @result = @_;
+        },
+    );
+    
+    # Syncronous or asyncronous call (compatibility method)
     $rpc->call( sub {
         my @result = @_;
         
@@ -74,13 +88,43 @@ Curerntly included encoder uses L<XML::LibXML>, and is 3 times faster than XML::
 
 Create XML::RPC::Fast object, server if url is undef, client if url is defined
 
+=head2 req( %ARGS )
+
+Clientside. Make syncronous or asyncronous call (depends on UA).
+
+If have cb, will invoke $cb with results and should not croak
+
+If have no cb, will return results and croak on error (only syncronous UA)
+
+Arguments are
+
+=over 4
+
+=item call => [ methodName => @args ]
+
+array ref of call arguments. Required
+
+=item cb => $cb->(@results)
+
+Invocation callback. Optional for syncronous UA. Behaviour is same as in call with C<$cb> and without
+
+=item url => $request_url
+
+Alternative invocation URL. Optional. By default will be used defined from constructor
+
+=item external_encoding => '...,
+
+Specify the encoding, used inside XML container just for this request. Passed to encoder
+
+=back
+
 =head2 call( 'method_name', @arguments ) : @results
 
-Clientside. Make syncronous call and return results. Croaks on error
+Clientside. Make syncronous call and return results. Croaks on error. Just a simple wrapper around C<req>
 
 =head2 call( $cb->(@res), 'method_name', @arguments ): void
 
-Clientside. Make syncronous or asyncronous call (depends on UA) and invoke $cb with results. Should not croak
+Clientside. Make syncronous or asyncronous call (depends on UA) and invoke $cb with results. Should not croak. Just a simple wrapper around C<req>
 
 =head2 receive ( $xml, $handler->($methodName,@args) ) : xml byte-stream
 
@@ -153,6 +197,10 @@ Specify the encoding, used inside XML container. By default it's utf-8. Passed d
 
 =head1 ACCESSORS
 
+=head2 url
+
+Get or set client url
+
 =head2 encoder
 
 Direct access to encoder object
@@ -194,13 +242,23 @@ BEGIN {
 	eval {
 		require Sub::Name;
 		Sub::Name->import('subname');
-	1 } or do { *subname = sub { $_[1] } }
+	1 } or do { *subname = sub { $_[1] } };
+
+	no strict 'refs';
+	for my $m (qw(url encoder ua)) {
+		*$m = sub {
+			local *__ANON__ = $m;
+			my $self = shift;
+			$self->{$m} = shift if @_;
+			$self->{$m};
+		};
+	}
 }
 
 our $faultCode = 0;
 
-sub encoder { shift->{encoder} }
-sub ua      { shift->{ua} }
+#sub encoder { shift->{encoder} }
+#sub ua      { shift->{ua} }
 
 sub import {
 	my $me = shift;
@@ -236,10 +294,9 @@ sub _load {
 			$req = $prefix.$req;
 			1;
 		}
-		or
-		eval {
+		or do {
 			push @fail, [ $prefix.$req,$@ ];
-			require join '/', split '::', $req.'.pm'; 1
+			eval{ require join '/', split '::', $req.'.pm'; 1 }
 		}
 		or do {
 			push @fail, [ $req,$@ ];
@@ -294,24 +351,38 @@ sub registerClass {
 sub call {
 	my $self = shift;
 	my $cb;$cb = shift if ref $_[0] and ref $_[0] eq 'CODE';
+	$self->req(
+		call => [@_],
+		$cb ? ( cb => $cb ) : (),
+	);
+}
+
+sub req {
+	my $self = shift;
+	my %args = @_;
+	my $cb = $args{cb};
 	if ($self->ua->async and !$cb) {
 		croak("Call have no cb and useragent is async");
 	}
-	my ( $methodname, @params ) = @_;
-	
+	my ( $methodname, @params ) = @{ $args{call} };
+	my $url = $args{url} || $self->{url};
 
-	unless ( $self->{url} ) {
+	unless ( $url ) {
 		if ($cb) {
 			$cb->(rpcfault(500, "No url"));
 			return;
 		} else {
-			croak('no url');
+			croak('No url');
 		}
 	};
-	my $uri = "$self->{url}#$methodname";
+	my $uri = "$url#$methodname";
 
 	$faultCode = 0;
-	my $body = $self->encoder->request( $methodname, @params );
+	my $body;
+	{
+		local $self->encoder->{external_encoding} = $args{external_encoding} if exists $args{external_encoding};
+		$body = $self->encoder->request( $methodname, @params );
+	}
 
 	#$self->{xml_out} = $body;
 

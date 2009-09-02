@@ -3,11 +3,10 @@
 use strict;
 use lib::abs '../lib';
 use XML::RPC::Enc::LibXML;
-use XML::Hash::LX;
+use XML::Hash::LX 0.05;
 use Test::More;
 use Test::NoWarnings;
 use MIME::Base64 'encode_base64';
-use R::Dump;
 use Encode;
 
 # Encoder
@@ -109,10 +108,12 @@ is_deeply [ $enc->decode( ( $enc->request( test => sub{{ base64 => encode_base64
 	[ test => 'test' ],
 	'decode base64';
 
-use DateTime::Format::ISO8601;
-is_deeply [ $enc->decode( ( $enc->request( test => sub {{ 'dateTime.iso8601' => '20090816T010203.04+0330' }} ) ) ) ],
-	[ test => DateTime::Format::ISO8601->parse_datetime('20090816T010203.04+0330') ],
-	'decode datetime';
+SKIP : {
+	eval { require DateTime::Format::ISO8601; 1 } or skip 'DateTime::Format::ISO8601 required',1;
+	is_deeply [ $enc->decode( ( $enc->request( test => sub {{ 'dateTime.iso8601' => '20090816T010203.04+0330' }} ) ) ) ],
+		[ test => DateTime::Format::ISO8601->parse_datetime('20090816T010203.04+0330') ],
+		'decode datetime';
+}
 
 __END__
 my $hash = [

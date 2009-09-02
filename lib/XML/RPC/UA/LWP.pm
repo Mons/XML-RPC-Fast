@@ -29,21 +29,7 @@ XML::RPC::UA::LWP - XML::RPC useragent, using LWP
 
 =head1 DESCRIPTION
 
-Default encoder/decoder for L<XML::RPC::Fast>
-
-If MIME::Base64 is installed, decoder for C<XML-RPC> type C<base64> will be setup
-
-If DateTime::Format::ISO8601 is installed, decoder for C<XML-RPC> type C<dateTime.iso8601> will be setup
-
-Also will be setup by default encoders for L<Class::Date> and L<DateTime> (will be encoded as C<dateTime.iso8601>)
-
-Ty avoid default decoders setup:
-
-    BEGIN {
-        $XML::RPC::Enc::LibXML::TYPES{base64} = 0;
-        $XML::RPC::Enc::LibXML::TYPES{'dateTime.iso8601'} = 0;
-    }
-    use XML::RPC::Enc::LibXML;
+Default syncronous useragent for L<XML::RPC::Fast>
 
 =head1 IMPLEMENTED METHODS
 
@@ -57,9 +43,11 @@ Ty avoid default decoders setup:
 
 =over 4
 
-=item * L<XML::RPC::Enc>
+=item * L<XML::RPC::UA>
 
 Base class (also contains documentation)
+
+=item * L<XML::RPC::UA::AnyEvent>
 
 =back
 
