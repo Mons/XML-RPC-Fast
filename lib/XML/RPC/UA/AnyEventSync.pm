@@ -1,9 +1,10 @@
-package XML::RPC::UA::AnyEvent;
+package XML::RPC::UA::AnyEventSync;
 
 use strict;
 use warnings;
 use HTTP::Response;
 use HTTP::Headers;
+use AnyEvent 5.0;
 use AnyEvent::HTTP 'http_request';
 use Carp;
 
@@ -12,16 +13,16 @@ our $VERSION = $XML::RPC::Fast::VERSION;
 
 =head1 NAME
 
-XML::RPC::UA::AnyEvent - XML::RPC useragent, using AnyEvent::HTTP
+XML::RPC::UA::AnyEventSync - Syncronous XML::RPC useragent, using AnyEvent::HTTP
 
 =head1 SYNOPSIS
 
     use XML::RPC::Fast;
-    use XML::RPC::UA::AnyEvent;
+    use XML::RPC::UA::AnyEventSync;
     
     my $rpc = XML::RPC::Fast->new(
         $uri,
-        ua => XML::RPC::UA::AnyEvent->new(
+        ua => XML::RPC::UA::AnyEventSync->new(
             ua      => 'YourApp/0.1',
             timeout => 3,
         ),
@@ -35,7 +36,7 @@ Asyncronous useragent for L<XML::RPC::Fast>. Coult be used in any AnyEvent appli
 
 =head2 new
 
-=head2 async = 1
+=head2 async = 0
 
 =head2 call
 
@@ -47,9 +48,9 @@ Asyncronous useragent for L<XML::RPC::Fast>. Coult be used in any AnyEvent appli
 
 Base class (also contains documentation)
 
-=item * L<XML::RPC::UA::AnyEventSync>
+=item * L<XML::RPC::UA::AnyEvent>
 
-Syncronous UA using AnyEvent
+Asyncronous UA using AnyEvent
 
 =item * L<AnyEvent>
 
@@ -64,7 +65,7 @@ HTTP-client using AnyEvent
 =cut
 
 
-sub async { 1 }
+sub async { 0 }
 
 sub new {
 	my $pkg = shift;
@@ -77,6 +78,7 @@ sub call {
 	my ($method, $url) = splice @_,0,2;
 	my %args = @_;
 	$args{cb} or croak "cb required for useragent @{[%args]}";
+	my $cv = AnyEvent->condvar;
 	#warn "call";
 	http_request
 		$method => $url,
@@ -94,8 +96,10 @@ sub call {
 				HTTP::Headers->new(%{$_[1]}),
 				$_[0],
 			) );
+			$cv->send;
 		},
 	;
+	$cv->recv;
 	return;
 }
 

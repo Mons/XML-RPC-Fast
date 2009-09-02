@@ -3,6 +3,7 @@ abstract: 'Fast and modular implementation for an XML-RPC client and server'
 author:
   - 'Mons Anderson <mons@cpan.org>'
 build_requires:
+  Encode: 0
   ExtUtils::MakeMaker: 6.42
   Test::More: 0
   Test::NoWarnings: 0
@@ -37,10 +38,14 @@ provides:
   XML::RPC::UA::AnyEvent:
     file: lib/XML/RPC/UA/AnyEvent.pm
     version: 0.5
+  XML::RPC::UA::AnyEventSync:
+    file: lib/XML/RPC/UA/AnyEventSync.pm
+    version: 0.5
   XML::RPC::UA::LWP:
     file: lib/XML/RPC/UA/LWP.pm
     version: 0.5
 recommends:
+  AnyEvent: 5.0
   AnyEvent::HTTP: 0
   DateTime::Format::ISO8601: 0
   MIME::Base64: 0

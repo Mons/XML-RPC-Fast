@@ -4,6 +4,7 @@ Changes
 cpants.pl
 ex/anyevent-client-gv.pl
 ex/anyevent-client.pl
+ex/anyevent-sync.pl
 ex/sample.pl
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
@@ -21,6 +22,7 @@ lib/XML/RPC/Enc/LibXML.pm
 lib/XML/RPC/Fast.pm
 lib/XML/RPC/UA.pm
 lib/XML/RPC/UA/AnyEvent.pm
+lib/XML/RPC/UA/AnyEventSync.pm
 lib/XML/RPC/UA/LWP.pm
 LICENSE
 makeall.sh

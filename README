@@ -10,14 +10,14 @@ SYNOPSIS
 
         use XML::RPC::Fast;
 
-    my $server = XML::RPC::Fast->new( undef, %args );
+        my $server = XML::RPC::Fast->new( undef, %args );
         my $client = XML::RPC::Fast->new( $uri,  %args );
 
     Create a simple XML-RPC service:
 
         use XML::RPC::Fast;
 
-    my $rpc = XML::RPC::Fast->new(
+        my $rpc = XML::RPC::Fast->new(
         undef,                         # the url is not required by server
         external_encoding => 'koi8-r', # any encoding, accepted by Encode
         #internal_encoding => 'koi8-r', # not supported for now
@@ -25,7 +25,7 @@ SYNOPSIS
         my $xml = do { local $/; <STDIN> };
         length($xml) == $ENV{CONTENT_LENGTH} or warn "Content-Length differs from actually received";
 
-    print "Content-type: text/xml; charset=$rpc->{external_encoding}\n\n";
+        print "Content-type: text/xml; charset=$rpc->{external_encoding}\n\n";
         print $rpc->receive( $xml, sub {
         my ( $methodname, @params ) = @_;
         return { you_called => $methodname, with_params => \@params };
@@ -35,20 +35,20 @@ SYNOPSIS
 
         use XML::RPC::Fast;
 
-    my $rpc = XML::RPC::Fast->new(
+        my $rpc = XML::RPC::Fast->new(
         'http://your.hostname/rpc/url'
         );
 
-    # Syncronous call
+        # Syncronous call
         my @result = $rpc->req(
         call => [ 'examples.getStateStruct', { state1 => 12, state2 => 28 } ],
         url => 'http://...',
         );
 
-    # Syncronous call (compatibility method)
+        # Syncronous call (compatibility method)
         my @result = $rpc->call( 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
 
-    # Syncronous or asyncronous call
+        # Syncronous or asyncronous call
         $rpc->req(
         call => ['examples.getStateStruct', { state1 => 12, state2 => 28 }],
         cb   => sub {
@@ -56,11 +56,11 @@ SYNOPSIS
         },
         );
 
-    # Syncronous or asyncronous call (compatibility method)
+        # Syncronous or asyncronous call (compatibility method)
         $rpc->call( sub {
         my @result = @_;
 
-    }, 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
+        }, 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
 
 DESCRIPTION
     XML::RPC::Fast is format-compatible with XML::RPC, but may use different
@@ -93,6 +93,9 @@ METHODS
     url => $request_url
         Alternative invocation URL. Optional. By default will be used
         defined from constructor
+
+    headers => { http-headers hashref }
+        Additional http headers to request
 
     external_encoding => '...,
         Specify the encoding, used inside XML container just for this

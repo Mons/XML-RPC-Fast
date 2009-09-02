@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 use Test::NoWarnings;
 use lib::abs '../lib';
 
@@ -13,6 +13,7 @@ BEGIN {
 	SKIP: {
 		eval { require AnyEvent::HTTP; } or skip "AnyEvent::HTTP missed, UA::AnyEvent will not work",1;
 		use_ok( 'XML::RPC::UA::AnyEvent' );
+		use_ok( 'XML::RPC::UA::AnyEventSync' );
 	}
 }
 

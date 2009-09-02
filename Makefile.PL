@@ -9,6 +9,7 @@ author   'Mons Anderson <mons@cpan.org>';
 build_requires 'Test::More';
 build_requires 'Test::NoWarnings';
 build_requires 'lib::abs', '0.90';
+build_requires 'Encode';
 
 # requires 'Encode';
 requires 'LWP::UserAgent';
@@ -22,6 +23,7 @@ requires 'XML::Hash::LX' , '0.05';
 recommends 'Sub::Name';
 recommends 'MIME::Base64';
 recommends 'DateTime::Format::ISO8601';
+recommends 'AnyEvent', '5.0';
 recommends 'AnyEvent::HTTP';
 
 provides 'XML::RPC::Fast' => {
@@ -52,6 +54,11 @@ provides 'XML::RPC::UA::LWP' => {
 provides 'XML::RPC::UA::AnyEvent' => {
 	version => $v,
 	file    => 'lib/XML/RPC/UA/AnyEvent.pm',
+};
+
+provides 'XML::RPC::UA::AnyEventSync' => {
+	version => $v,
+	file    => 'lib/XML/RPC/UA/AnyEventSync.pm',
 };
 
 auto_install;

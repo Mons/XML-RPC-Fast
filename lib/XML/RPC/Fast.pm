@@ -112,6 +112,10 @@ Invocation callback. Optional for syncronous UA. Behaviour is same as in call wi
 
 Alternative invocation URL. Optional. By default will be used defined from constructor
 
+=item headers => { http-headers hashref }
+
+Additional http headers to request
+
 =item external_encoding => '...,
 
 Specify the encoding, used inside XML container just for this request. Passed to encoder
@@ -391,7 +395,7 @@ sub req {
 	#warn "Call $body";
 	$self->ua->call(
 		POST    => $self->{url},
-		#headers => $headers,
+		$args{headers} ? ( headers => $args{headers} ) : (),
 		body    => $body,
 		cb      => sub {
 			my $res = shift;
