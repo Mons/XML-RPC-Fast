@@ -29,7 +29,7 @@ XML::RPC::UA::AnyEvent - XML::RPC useragent, using AnyEvent::HTTP
 
 =head1 DESCRIPTION
 
-Asyncronous useragent for L<XML::RPC::Fast>. Coult be used in any AnyEvent application.
+Asyncronous useragent for L<XML::RPC::Fast>. Could be used in any AnyEvent application.
 
 =head1 IMPLEMENTED METHODS
 

@@ -30,7 +30,7 @@ XML::RPC::UA::AnyEventSync - Syncronous XML::RPC useragent, using AnyEvent::HTTP
 
 =head1 DESCRIPTION
 
-Asyncronous useragent for L<XML::RPC::Fast>. Coult be used in any AnyEvent application.
+Syncronous useragent for L<XML::RPC::Fast>. Couldn't be used in any AnyEvent application since using condvar->recv in every call.
 
 =head1 IMPLEMENTED METHODS
 
