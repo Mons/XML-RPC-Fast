@@ -1,6 +1,7 @@
 package XML::RPC::UA::AnyEvent;
 
 use strict;
+use warnings;
 use HTTP::Response;
 use HTTP::Headers;
 use AnyEvent::HTTP 'http_request';

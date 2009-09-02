@@ -1,8 +1,10 @@
 # XML::RPC::Fast history
 
-0.5   2009-09-02
+0.5   2009-09-03
       * Fixes to tests
-      * 
+      * Added req method (more universal than call)
+      * Make accessors with set ability
+      * Add UA::AnyEvent
 
 0.4   2009-08-28
       * Make modular encoder and useragent

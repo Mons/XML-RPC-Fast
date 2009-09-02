@@ -3,7 +3,7 @@ NAME
     and server
 
 VERSION
-    Version 0.4
+    Version 0.5
 
 SYNOPSIS
     Generic usage
@@ -40,9 +40,23 @@ SYNOPSIS
         );
 
     # Syncronous call
+        my @result = $rpc->req(
+        call => [ 'examples.getStateStruct', { state1 => 12, state2 => 28 } ],
+        url => 'http://...',
+        );
+
+    # Syncronous call (compatibility method)
         my @result = $rpc->call( 'examples.getStateStruct', { state1 => 12, state2 => 28 } );
 
-        # Syncronous or asyncronous call
+    # Syncronous or asyncronous call
+        $rpc->req(
+        call => ['examples.getStateStruct', { state1 => 12, state2 => 28 }],
+        cb   => sub {
+            my @result = @_;
+        },
+        );
+
+    # Syncronous or asyncronous call (compatibility method)
         $rpc->call( sub {
         my @result = @_;
 
@@ -59,12 +73,39 @@ METHODS
     Create XML::RPC::Fast object, server if url is undef, client if url is
     defined
 
+  req( %ARGS )
+    Clientside. Make syncronous or asyncronous call (depends on UA).
+
+    If have cb, will invoke $cb with results and should not croak
+
+    If have no cb, will return results and croak on error (only syncronous
+    UA)
+
+    Arguments are
+
+    call => [ methodName => @args ]
+        array ref of call arguments. Required
+
+    cb => $cb->(@results)
+        Invocation callback. Optional for syncronous UA. Behaviour is same
+        as in call with $cb and without
+
+    url => $request_url
+        Alternative invocation URL. Optional. By default will be used
+        defined from constructor
+
+    external_encoding => '...,
+        Specify the encoding, used inside XML container just for this
+        request. Passed to encoder
+
   call( 'method_name', @arguments ) : @results
-    Clientside. Make syncronous call and return results. Croaks on error
+    Clientside. Make syncronous call and return results. Croaks on error.
+    Just a simple wrapper around "req"
 
   call( $cb->(@res), 'method_name', @arguments ): void
     Clientside. Make syncronous or asyncronous call (depends on UA) and
-    invoke $cb with results. Should not croak
+    invoke $cb with results. Should not croak. Just a simple wrapper around
+    "req"
 
   receive ( $xml, $handler->($methodName,@args) ) : xml byte-stream
     Serverside. Process received XML and invoke $handler with parameters
@@ -130,6 +171,9 @@ OPTIONS
         ->new( $url, encoder => 'LibXML', external_encoding => 'koi8-r' )
 
 ACCESSORS
+  url
+    Get or set client url
+
   encoder
     Direct access to encoder object
 
