@@ -221,7 +221,7 @@ sub _unparse_param {
 		}
 		elsif ( UNIVERSAL::isa($p,'SCALAR') ) {
 			my $v = XML::LibXML::Element->new(ref $p);
-			$v->appendText($$p);
+			$v->appendText($$p) if defined $$p;
 			$r->appendChild($v);
 		}
 		elsif ( UNIVERSAL::isa($p,'REF') ) {
@@ -324,13 +324,15 @@ sub fault {
 
 sub decode {
 	my $self = shift;
-	$self->_parse( $self->{parser}->parse_string(shift) )
+	my $string = shift;
+	#utf8::encode $string if utf8::is_utf8($string);
+	$self->_parse( $self->{parser}->parse_string($string) )
 }
 
 sub _parse_param {
 	my $v = shift;
 	for my $t ($v->childNodes) {
-		next if $t->nodeName eq '#text';
+		next if ref $t eq 'XML::LibXML::Text';
 		my $type = $t->nodeName;
 		#print $t->nodeName,"\n";
 		if ($type eq 'string') {
@@ -393,9 +395,12 @@ sub _parse_param {
 				return $TYPES{$type}( $t->childNodes );
 			} else {
 				my @children = $t->childNodes;
-				if (@children > 1 xor $children[0]->nodeName ne '#text') {
+				@children or return bless( \do{ my $o }, $type );
+				if (( @children > 1 ) xor ( ref $children[0] ne 'XML::LibXML::Text' )) {
+					#print STDERR + (0+@children)."; $type => ",ref $children[0], ' ', $children[0]->nodeName, "\n";
 					return bless \(xml2hash($t)->{$type}),$type;
 				} else {
+					#print STDERR + "*** ".(0+@children)."; $type => ",ref $children[0], ' ', $children[0]->nodeName, "\n";
 					return bless \($children[0]->textContent),$type;
 				}
 			}
@@ -408,11 +413,10 @@ sub _parse_param {
 sub _parse {
 	my $self = shift;
 	my $doc = shift;
-	my $xp = XML::LibXML::XPathContext->new($doc);
 	my @r;
 	my $root = $doc->documentElement;
 	local @TYPES{keys %{ $self->{types} }} = values %{ $self->{types} };
-	for my $p ($xp->findnodes('//param')) {
+	for my $p ($doc->findnodes('//param')) {
 	#for my $ps ($root->childNodes) {
 	#	if ($ps->nodeName eq 'params') {
 	#		for my $p ($ps->childNodes) {
@@ -428,12 +432,12 @@ sub _parse {
 	#		}
 	#	}
 	}
-	for my $m ($xp->findnodes('//methodName')) {
+	for my $m ($doc->findnodes('//methodName')) {
 		unshift @r, $m->textContent;
 		last;
 	}
 	unless(@r) {
-	for my $f ($xp->findnodes('//fault')) {
+	for my $f ($doc->findnodes('//fault')) {
 		my ($c,$e);
 		
 		for ($f->childNodes) {

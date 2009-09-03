@@ -81,6 +81,7 @@ sub call {
 	$req->header('Content-Type'   => 'text/xml');
 	$req->header('User-Agent'     => $self->{ua});
 	$req->header( $_ => $args{headers}{$_} ) for keys %{$args{headers}};
+	utf8::encode($args{body}) if utf8::is_utf8($args{body});
 	{
 		use bytes;
 		$req->header( 'Content-Length' => length($args{body}) );
