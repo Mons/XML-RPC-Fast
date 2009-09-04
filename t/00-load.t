@@ -11,7 +11,7 @@ BEGIN {
 	use_ok( 'XML::RPC::UA' );
 	use_ok( 'XML::RPC::UA::LWP' );
 	SKIP: {
-		eval { require AnyEvent::HTTP; } or skip "AnyEvent::HTTP missed, UA::AnyEvent will not work",1;
+		eval { require AnyEvent::HTTP; } or skip "AnyEvent::HTTP missed, UA::AnyEvent will not work",2;
 		use_ok( 'XML::RPC::UA::AnyEvent' );
 		use_ok( 'XML::RPC::UA::AnyEventSync' );
 	}
