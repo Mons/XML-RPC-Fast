@@ -5,6 +5,7 @@ use warnings;
 use base 'XML::RPC::Enc';
 use XML::LibXML;
 use XML::Hash::LX;
+use Carp;
 #use Encode ();
 
 use XML::RPC::Fast ();
@@ -110,6 +111,7 @@ our $E;
 BEGIN {
 	if ( !exists $TYPES{base64} and eval{ require MIME::Base64;1 } ) {
 		$TYPES{base64} = sub {
+			#defined $E ? $E->encode(
 			MIME::Base64::decode(shift->textContent);
 		};
 	}
@@ -144,7 +146,7 @@ sub new {
 		parser => XML::LibXML->new(),
 		types  => { },
 		class  => { },
-		internal_encoding => undef,
+		#internal_encoding => undef,
 	}, $pkg;
 	$self->{external_encoding} = 'utf-8' unless defined $self->{external_encoding};
 	return $self;
@@ -190,7 +192,7 @@ sub _unparse_param {
 		for ( keys %$p ) {
 			my $m = XML::LibXML::Element->new('member');
 			my $n = XML::LibXML::Element->new('name');
-			$n->appendText($_);
+			$n->appendText(defined $E ? $E->decode($_) : $_);
 			$m->appendChild($n);
 			$m->appendChild(_unparse_param($p->{$_}));
 			$s->appendChild($m);
@@ -215,13 +217,13 @@ sub _unparse_param {
 				$r->appendChild($t);
 			} else {
 				my $v = XML::LibXML::Element->new($t);
-				$v->appendText($x);
+				$v->appendText(defined $E ? $E->decode($x) : $x);
 				$r->appendChild($v);
 			}
 		}
 		elsif ( UNIVERSAL::isa($p,'SCALAR') ) {
 			my $v = XML::LibXML::Element->new(ref $p);
-			$v->appendText($$p) if defined $$p;
+			$v->appendText(defined $E ? $E->decode($$p) : $$p) if defined $$p;
 			$r->appendChild($v);
 		}
 		elsif ( UNIVERSAL::isa($p,'REF') ) {
@@ -252,7 +254,7 @@ sub _unparse_param {
 		}
 		else {
 			my $v = XML::LibXML::Element->new('string');
-			$v->appendText($p);
+			$v->appendText(defined $E ? $E->decode($p) : $p);
 			$r->appendChild($v);
 		}
 	}
@@ -262,12 +264,15 @@ sub _unparse_param {
 sub request {
 	my $self = shift;
 	local @CLASS{keys %{ $self->{class} }} = values %{ $self->{class} };
+	local $E = Encode::find_encoding($self->{internal_encoding})
+		or croak "Could not find encoding $self->{internal_encoding}"
+		if defined $self->{internal_encoding};
 	my $method = shift;
 	my $doc = XML::LibXML::Document->new('1.0',$self->{external_encoding});
 	my $root = XML::LibXML::Element->new('methodCall');
 	$doc->setDocumentElement($root);
 	my $n = XML::LibXML::Element->new('methodName');
-	$n->appendText($method);
+	$n->appendText(defined $E ? $E->decode($method) : $method);
 	$root->appendChild($n);
 	my $prms = XML::LibXML::Element->new('params');
 	$root->appendChild($prms);
@@ -281,8 +286,10 @@ sub request {
 
 sub response {
 	my $self = shift;
-	#local $E = Encode::find_encoding($self->{internal_encoding}) if defined $self->{internal_encoding};
 	local @CLASS{keys %{ $self->{class} }} = values %{ $self->{class} };
+	local $E = Encode::find_encoding($self->{internal_encoding})
+		or croak "Could not find encoding $self->{internal_encoding}"
+		if defined $self->{internal_encoding};
 	my $doc = XML::LibXML::Document->new('1.0',$self->{external_encoding});
 	my $root = XML::LibXML::Element->new('methodResponse');
 	$doc->setDocumentElement($root);
@@ -299,6 +306,9 @@ sub response {
 sub fault {
 	my $self = shift;
 	local @CLASS{keys %{ $self->{class} }} = values %{ $self->{class} };
+	local $E = Encode::find_encoding($self->{internal_encoding})
+		or croak "Could not find encoding $self->{internal_encoding}"
+		if defined $self->{internal_encoding};
 	my ($code,$err) = @_;
 	my $doc = XML::LibXML::Document->new('1.0',$self->{external_encoding});
 	my $root = XML::LibXML::Element->new('methodResponse');
@@ -309,7 +319,7 @@ sub fault {
 	for (qw(faultCode faultString)){
 		my $m = XML::LibXML::Element->new('member');
 		my $n = XML::LibXML::Element->new('name');
-		$n->appendText($_);
+		$n->appendText(defined $E ? $E->decode($_) : $_);
 		$m->appendChild($n);
 		$m->appendChild(_unparse_param(shift));
 		$s->appendChild($m);
@@ -336,7 +346,7 @@ sub _parse_param {
 		my $type = $t->nodeName;
 		#print $t->nodeName,"\n";
 		if ($type eq 'string') {
-			return ''.$t->textContent;
+			return defined $E ? $E->encode(''.$t->textContent) : ''.$t->textContent;
 		}
 		elsif ($type eq 'i4' or $type eq 'int') {
 			return int $t->textContent;
@@ -363,6 +373,10 @@ sub _parse_param {
 							$mv = _parse_param ($x);
 							$mn and last;
 						}
+					}
+					if (defined $E) {
+						$mn = $E->encode($mn);
+						$mv = $E->encode($mv);
 					}
 					$r->{$mn} = $mv;
 				}
@@ -401,13 +415,15 @@ sub _parse_param {
 					return bless \(xml2hash($t)->{$type}),$type;
 				} else {
 					#print STDERR + "*** ".(0+@children)."; $type => ",ref $children[0], ' ', $children[0]->nodeName, "\n";
-					return bless \($children[0]->textContent),$type;
+					return bless \(
+						defined $E ? $E->encode($children[0]->textContent) : $children[0]->textContent
+					),$type;
 				}
 			}
 		}
 		last;
 	}
-	return $v->textContent;
+	return defined $E ? $E->encode($v->textContent) : $v->textContent
 }
 
 sub _parse {
@@ -416,6 +432,9 @@ sub _parse {
 	my @r;
 	my $root = $doc->documentElement;
 	local @TYPES{keys %{ $self->{types} }} = values %{ $self->{types} };
+	local $E = Encode::find_encoding($self->{internal_encoding})
+		or croak "Could not find encoding $self->{internal_encoding}"
+		if defined $self->{internal_encoding};
 	for my $p ($doc->findnodes('//param')) {
 	#for my $ps ($root->childNodes) {
 	#	if ($ps->nodeName eq 'params') {
@@ -433,7 +452,7 @@ sub _parse {
 	#	}
 	}
 	for my $m ($doc->findnodes('//methodName')) {
-		unshift @r, $m->textContent;
+		unshift @r, defined $E ? $E->encode($m->textContent) : $m->textContent;
 		last;
 	}
 	unless(@r) {
@@ -447,8 +466,8 @@ sub _parse {
 				$e = $flt->{faultString};
 				last;
 			} else {
-				$c = $_->textContent if $_->nodeName eq 'faultCode';
-				$e = $_->textContent if $_->nodeName eq 'faultString';
+				$c = defined $E ? $E->encode($_->textContent) : $_->textContent if $_->nodeName eq 'faultCode';
+				$e = defined $E ? $E->encode($_->textContent) : $_->textContent if $_->nodeName eq 'faultString';
 			}
 		}
 		return { fault => { faultCode => $c, faultString => $e } };

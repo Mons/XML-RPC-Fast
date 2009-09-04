@@ -2,6 +2,7 @@
 
 0.6   2009-09-04
       * Fixes (thanks to Marko Nordberg for reports)
+      * Added internal_encoding to Enc::LibXML
 
 0.5   2009-09-03
       * Fixes to tests
