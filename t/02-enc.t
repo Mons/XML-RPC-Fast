@@ -12,16 +12,19 @@ use Data::Dumper;$Data::Dumper::Useqq=1;
 sub dd(@) { Dumper (@_) }
 # Encoder
 
-plan tests => 26;
+plan tests => 35;
 
 my $enc = XML::RPC::Enc::LibXML->new();
 
 my $hd = qq{<?xml version="1.0" encoding="utf-8"?>\n};
 my ($xml,$data);
 
+#$xml = q{<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>bss.storeDataStorage</methodName><params><param><value><struct><member><name>value</name><value><string>€€€</string></value></member><member><name>name</name><value><string>test</string></value></member></struct></value></param></params></methodCall>};
+#print + Dumper $enc->decode( $xml );exit;
 #print my $xml = $enc->request( test => bless( \do {my $o}, 'custom' ) );#exit;
 #use Data::Dumper; print + Dumper $enc->decode( $xml );
 #exit;
+
 $SIG{__DIE__} = sub { require Carp;Carp::confess @_ };
 
 is
@@ -60,11 +63,17 @@ is_deeply xml2hash( $enc->request( test => 'z' ) ),
 	{ methodCall => { methodName => "test", params => { param => { value => { string => 'z' } } } } },
 	'request string';
 
-is_deeply xml2hash( $enc->request( test => { a => 1 } ) ),
+is_deeply xml2hash( $xml = $enc->request( test => { a => 1 } ) ),
 	{ methodCall => { methodName => "test", params => { param => { value => {
 		struct => { member => { name => 'a', value => { i4 => 1 } } }
 	} } } } },
 	'request struct';
+
+is $xml,
+	$hd."<methodCall><methodName>test</methodName><params><param><value><struct><member><name>a</name><value><i4>1</i4></value></member></struct></value></param></params></methodCall>\n",
+	'request xml struct'
+	or diag dd $xml
+;
 
 is_deeply xml2hash( $enc->request( test => [ 1,2 ] ) ),
 	{ methodCall => { methodName => "test", params => { param => { value => {
@@ -149,6 +158,12 @@ is_deeply $data = [ $enc->decode( ( $xml = $enc->request( test => bless( do{\(my
 	or diag Dumper($xml,$data)
 ;
 
+is_deeply $data = [ $enc->decode( ( $xml = $enc->request( test => { a => 1 } ) ) ) ],
+	[ test => { a => 1 } ],
+	'decode struct',
+	or diag Dumper($xml,$data)
+;
+
 SKIP : {
 	eval { require MIME::Base64;1 } or skip 'MIME::Base64 required',1;
 	is_deeply [ $enc->decode( ( $enc->request( test => sub{{ base64 => MIME::Base64::encode('test') }} ) ) ) ],
@@ -163,7 +178,46 @@ SKIP : {
 		'decode datetime';
 }
 
+# Tests for Marko Nordberg's testcases
+
+is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="UTF-8"?><methodResponse xmlns:ex="http://ws.apache.org/xmlrpc/namespaces/extensions"><params><param><value><struct><member><name>status</name><value>noError</value></member></struct></value></param></params></methodResponse>} ) ],
+	[ { status => 'noError' } ],
+	'decode 1',
+	or diag Dumper($data)
+;
+
+is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>bss.storeDataStorage</methodName><params><param><value><struct><member><name>value</name><value><string>€€€</string></value></member><member><name>name</name><value><string>test</string></value></member></struct></value></param></params></methodCall>} ) ],
+	[ 'bss.storeDataStorage' => { name => 'test', value => "\x{20ac}\x{20ac}\x{20ac}", } ],
+	'decode 2',
+	or diag Dumper($data)
+;
+
+is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "\x{20ac}\x{20ac}\x{20ac}", } )),
+	320,
+	'utf8 xml content length'
+	or diag dd $data, $xml;
+
+is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "€€€", } )),
+	320,
+	'inplace octets xml content length'
+	or diag dd $data, $xml;
+
+is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "\342\202\254\342\202\254\342\202\254", } )),
+	320,
+	'octets xml content length'
+	or diag dd $data, $xml;
+
+is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>storeDataStorage</methodName><params><param><value><struct><member><name>value</name><value><string>ÄÄÄ</string></value></member><member><name>name</name><value><string>test</string></value></member></struct></value></param></params></methodCall>} ) ],
+	[ storeDataStorage => { name => 'test', value => "\x{c4}\x{c4}\x{c4}", }],
+	'decode 3',
+	or diag Dumper($data)
+;
 __END__
+is_deeply $data = [ $enc->decode( q{} ) ],
+	[ ],
+	'decode 3',
+	or diag Dumper($data)
+;
 my $hash = [
 	{
 		name => 'rec',

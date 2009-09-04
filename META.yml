@@ -25,25 +25,25 @@ no_index:
 provides:
   XML::RPC::Enc:
     file: lib/XML/RPC/Enc.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::Enc::LibXML:
     file: lib/XML/RPC/Enc/LibXML.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::Fast:
     file: lib/XML/RPC/Fast.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::UA:
     file: lib/XML/RPC/UA.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::UA::AnyEvent:
     file: lib/XML/RPC/UA/AnyEvent.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::UA::AnyEventSync:
     file: lib/XML/RPC/UA/AnyEventSync.pm
-    version: 0.5
+    version: 0.6
   XML::RPC::UA::LWP:
     file: lib/XML/RPC/UA/LWP.pm
-    version: 0.5
+    version: 0.6
 recommends:
   AnyEvent: 5.0
   AnyEvent::HTTP: 0
@@ -60,4 +60,4 @@ requires:
   perl: 5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.5
+version: 0.6

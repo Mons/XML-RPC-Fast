@@ -3,7 +3,7 @@ use inc::Module::Install;
 
 name     'XML-RPC-Fast';
 all_from 'lib/XML/RPC/Fast.pm';
-version   my $v = '0.5';
+version   my $v = '0.6';
 author   'Mons Anderson <mons@cpan.org>';
 
 build_requires 'Test::More';
