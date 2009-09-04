@@ -281,7 +281,9 @@ sub request {
 		$p->appendChild( _unparse_param($v) );
 		$prms->appendChild($p);
 	}
-	return $doc->toString;
+	my $x = $doc->toString;
+	utf8::encode($x) if utf8::is_utf8($x);
+	return $x;
 }
 
 sub response {
@@ -300,7 +302,9 @@ sub response {
 		$p->appendChild( _unparse_param($v) );
 		$prms->appendChild($p);
 	}
-	return $doc->toString;
+	my $x = $doc->toString;
+	utf8::encode($x) if utf8::is_utf8($x);
+	return $x;
 }
 
 sub fault {
@@ -327,7 +331,9 @@ sub fault {
 	$v->appendChild($s);
 	$f->appendChild($v);
 	$root->appendChild($f);
-	return $doc->toString;
+	my $x = $doc->toString;
+	utf8::encode($x) if utf8::is_utf8($x);
+	return $x;
 }
 
 # Decoder part
