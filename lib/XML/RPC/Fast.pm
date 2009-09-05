@@ -388,7 +388,7 @@ sub req {
 		$body = $self->encoder->request( $methodname, @params );
 	}
 
-	#$self->{xml_out} = $body;
+	$self->{xml_out} = $body;
 
 	#my $start = time;
 	my @data;
