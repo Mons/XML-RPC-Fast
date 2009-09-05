@@ -337,11 +337,12 @@ sub fault {
 }
 
 # Decoder part
-
+our $src;
 sub decode {
 	my $self = shift;
 	my $string = shift;
 	#utf8::encode $string if utf8::is_utf8($string);
+	local $src = $string;
 	$self->_parse( $self->{parser}->parse_string($string) )
 }
 
@@ -393,6 +394,10 @@ sub _parse_param {
 			my $r = [];
 			for my $d ($t->childNodes) {
 				#print "\tdata:".$d->nodeName,"\n";
+				unless (defined $d) {
+					warn "!!! Internal bug: childNodes return undef. XML=\n$src";
+					next;
+				}
 				if ($d->nodeName eq 'data') {
 					for my $x ($d->childNodes) {
 						#print "\tdata:".$x->nodeName,"\n";

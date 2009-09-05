@@ -15,7 +15,7 @@ BEGIN{
 sub dd(@) { Dumper (@_) }
 # Encoder
 
-plan tests => 35;
+plan tests => 36;
 
 my $enc = XML::RPC::Enc::LibXML->new(
 	internal_encoding => 'utf8',
@@ -229,6 +229,16 @@ is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'tes
 		or diag Dumper($data)
 	;
 }
+
+{
+	#local $enc->{internal_encoding} = undef;
+	is_deeply $data = [ $enc->decode( qq{$hd<methodResponse><params><param><value><array/></value></param></params></methodResponse>} ) ],
+		[ [] ],
+		'decode 4',
+		or diag Dumper($data)
+	;
+}
+
 __END__
 is_deeply $data = [ $enc->decode( q{} ) ],
 	[ ],
