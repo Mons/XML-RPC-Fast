@@ -10,13 +10,9 @@ package XML::RPC::Fast;
 
 XML::RPC::Fast - Fast and modular implementation for an XML-RPC client and server
 
-=head1 VERSION
-
-Version 0.6
-
 =cut
 
-our $VERSION   = '0.6';
+our $VERSION   = '0.7'; $VERSION = eval $VERSION;
 
 =head1 SYNOPSIS
 
@@ -160,11 +156,13 @@ Below is the options, accepted by new()
 
 Client only. Useragent object, or package name
 
-    ->new( $url, ua => 'LWP' )
+    ->new( $url, ua => 'LWP' ) # same as XML::RPC::UA::LWP
     # or 
     ->new( $url, ua => 'XML::RPC::UA::LWP' )
     # or 
     ->new( $url, ua => XML::RPC::UA::LWP->new( ... ) )
+    # or 
+    ->new( $url, ua => XML::RPC::UA::Curl->new( ... ) )
 
 =head2 timeout
 
@@ -385,7 +383,9 @@ sub req {
 	my $body;
 	{
 		local $self->encoder->{external_encoding} = $args{external_encoding} if exists $args{external_encoding};
-		$body = $self->encoder->request( $methodname, @params );
+		my $newurl;
+		($body,$newurl) = $self->encoder->request( $methodname, @params );
+		$url = $newurl if defined $newurl;
 	}
 
 	$self->{xml_out} = $body;
@@ -394,7 +394,7 @@ sub req {
 	my @data;
 	#warn "Call $body";
 	$self->ua->call(
-		POST    => $self->{url},
+		($args{method} || 'POST')    => $url,
 		$args{headers} ? ( headers => $args{headers} ) : (),
 		body    => $body,
 		cb      => sub {

@@ -1,9 +1,10 @@
+my $MI  = $Module::Install::MAIN;
 use 5.008003; # I want Encode to work
 use inc::Module::Install;
 
 name     'XML-RPC-Fast';
 all_from 'lib/XML/RPC/Fast.pm';
-version   my $v = '0.6';
+#version   my $v = '0.6';
 author   'Mons Anderson <mons@cpan.org>';
 
 build_requires 'Test::More';
@@ -25,7 +26,11 @@ recommends 'MIME::Base64';
 recommends 'DateTime::Format::ISO8601';
 recommends 'AnyEvent', '5.0';
 recommends 'AnyEvent::HTTP';
+recommends 'WWW::Curl';
 
+
+auto_provides;
+=for rem
 provides 'XML::RPC::Fast' => {
 	version => $v,
 	file    => 'lib/XML/RPC/Fast.pm',
@@ -61,7 +66,12 @@ provides 'XML::RPC::UA::AnyEventSync' => {
 	file    => 'lib/XML/RPC/UA/AnyEventSync.pm',
 };
 
+provides 'XML::RPC::UA::Curl' => {
+	version => $v,
+	file    => 'lib/XML/RPC/UA/Curl.pm',
+};
+=cut
 auto_install;
 
 WriteAll;
-
+print STDERR "Generated makefile for ".$MI->load('name')->name."-".$MI->load('version')->version."\n";

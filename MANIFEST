@@ -1,7 +1,5 @@
 .cvsignore
-author_test.sh
 Changes
-cpants.pl
 ex/anyevent-client-gv.pl
 ex/anyevent-client.pl
 ex/anyevent-sync.pl
@@ -23,22 +21,17 @@ lib/XML/RPC/Fast.pm
 lib/XML/RPC/UA.pm
 lib/XML/RPC/UA/AnyEvent.pm
 lib/XML/RPC/UA/AnyEventSync.pm
+lib/XML/RPC/UA/Curl.pm
 lib/XML/RPC/UA/LWP.pm
 LICENSE
-makeall.sh
 Makefile.PL
 MANIFEST			This list of files
+MANIFEST.SKIP
 META.yml
 README
 t/00-load.t
 t/01-compatibility.t
 t/02-enc.t
-t/90-examples.t
-t/97-changes.t
-t/98-fixme.t
-t/98-metayml.t
-t/99-kwalitee.t
 t/pod-coverage.t
 t/pod.t
-xt/Old.pm
-xt/xr.pl
+xt/99-dist.t

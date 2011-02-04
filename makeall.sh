@@ -19,7 +19,6 @@ TEST_AUTHOR=1 make test && \
 make disttest && \
 make dist && \
 cp -f *.tar.gz dist/ && \
-perl cpants.pl && \
 make clean && \
 rm -rf MANIFEST.bak Makefile.old && \
 echo "All is OK"

@@ -1,6 +1,7 @@
 ---
 abstract: 'Fast and modular implementation for an XML-RPC client and server'
 author:
+  - 'Mons Anderson, C<< <mons@cpan.org> >>'
   - 'Mons Anderson <mons@cpan.org>'
 build_requires:
   Encode: 0
@@ -11,7 +12,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.91'
+generated_by: 'Module::Install version 1.00'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -25,31 +26,35 @@ no_index:
 provides:
   XML::RPC::Enc:
     file: lib/XML/RPC/Enc.pm
-    version: 0.6
+    version: 0
   XML::RPC::Enc::LibXML:
     file: lib/XML/RPC/Enc/LibXML.pm
-    version: 0.6
+    version: 0
   XML::RPC::Fast:
     file: lib/XML/RPC/Fast.pm
-    version: 0.6
+    version: 0.7
   XML::RPC::UA:
     file: lib/XML/RPC/UA.pm
-    version: 0.6
+    version: 0
   XML::RPC::UA::AnyEvent:
     file: lib/XML/RPC/UA/AnyEvent.pm
-    version: 0.6
+    version: 0
   XML::RPC::UA::AnyEventSync:
     file: lib/XML/RPC/UA/AnyEventSync.pm
-    version: 0.6
+    version: 0
+  XML::RPC::UA::Curl:
+    file: lib/XML/RPC/UA/Curl.pm
+    version: 0
   XML::RPC::UA::LWP:
     file: lib/XML/RPC/UA/LWP.pm
-    version: 0.6
+    version: 0
 recommends:
   AnyEvent: 5.0
   AnyEvent::HTTP: 0
   DateTime::Format::ISO8601: 0
   MIME::Base64: 0
   Sub::Name: 0
+  WWW::Curl: 0
 requires:
   HTTP::Headers: 0
   HTTP::Request: 0
@@ -60,4 +65,4 @@ requires:
   perl: 5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.6
+version: 0.7

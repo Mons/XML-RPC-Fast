@@ -54,7 +54,7 @@ sub new {
 
 # Encoder part
 
-=head2 request ($method, @args) : xml byte-stream
+=head2 request ($method, @args) : xml byte-stream, [ new call url ]
 
 Encode request into XML
 
