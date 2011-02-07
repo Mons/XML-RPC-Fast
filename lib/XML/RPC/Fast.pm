@@ -10,6 +10,10 @@ package XML::RPC::Fast;
 
 XML::RPC::Fast - Fast and modular implementation for an XML-RPC client and server
 
+=head1 VERSION
+
+0.7
+
 =cut
 
 our $VERSION   = '0.7'; $VERSION = eval $VERSION;

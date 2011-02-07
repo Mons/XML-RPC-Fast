@@ -60,7 +60,7 @@ sub new {
 	my %args = @_;
 	my $useragent = delete $args{ua} || 'XML-RPC-Fast/'.$XML::RPC::Fast::VERSION;
 	my $ua = WWW::Curl::Easy->new;
-	$ua->setopt(CURLOPT_TIMEOUT, (exists $args{timeout} ? $args{timeout} : 10) );
+	$ua->setopt(CURLOPT_TIMEOUT, (exists $args{timeout} ? $args{timeout}//0 : 10) );
 	return bless {
 		lwp => $ua,
 		ua => $useragent,
