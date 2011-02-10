@@ -7,6 +7,7 @@ $perl -v
 rm -rf MANIFEST.bak MANIFEST Makefile.old && \
 echo > '_.tar.gz' && \
 pod2text $MODULE > README && \
+perldoc -u $MODULE > README.pod && \
 $perl -i -lpne 's{^\s+$}{};s{^    ((?: {8})+)}{" "x(4+length($1)/2)}se;' README && \
 $perl Makefile.PL && \
 rm *.tar.gz && \
