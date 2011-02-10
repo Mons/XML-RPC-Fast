@@ -10,6 +10,18 @@ use Carp;
 
 use XML::RPC::Fast ();
 our $VERSION = $XML::RPC::Fast::VERSION;
+BEGIN {
+	if (eval { my $x = pack 'q', -1; 1 }) {
+		*_HAVE_BIGINT = sub () { 1 };
+		my $maxint = eval q{ 0+"9223372036854775807" };
+		*_MAX_BIGINT = sub () { $maxint };
+	} else {
+		require Math::BigInt;
+		*_HAVE_BIGINT = sub () { 0 };
+		my $maxint = Math::BigInt->new("0x7fffffffffffffff");
+		*_MAX_BIGINT  = sub () { $maxint };
+	}
+}
 
 
 =head1 NAME
@@ -242,15 +254,74 @@ sub _unparse_param {
 			my $v = XML::LibXML::Element->new('string');
 			$r->appendChild($v);
 		}
-		elsif ( $p =~ m/^[\-+]?\d+$/ and  abs($p) <= ( 0xffffffff >> 1 )  ) {
-			my $v = XML::LibXML::Element->new('i4');
-			$v->appendText($p);
-			$r->appendChild($v);
-		}
-		elsif ( $p =~ m/^[\-+]?\d+\.\d+$/ ) {
-			my $v = XML::LibXML::Element->new('double');
-			$v->appendText($p);
-			$r->appendChild($v);
+
+=for rem
+
+Q: What is the legal syntax (and range) for integers?
+   How to deal with leading zeros?
+   Is a leading plus sign allowed?
+   How to deal with whitespace?
+
+A: An integer is a 32-bit signed number.
+   You can include a plus or minus at the beginning of a string of numeric characters.
+   Leading zeros are collapsed.
+   Whitespace is not permitted.
+   Just numeric characters preceeded by a plus or minus.
+
+Q: What is the legal syntax (and range) for floating point values (doubles)?
+   How is the exponent represented?
+   How to deal with whitespace?
+   Can infinity and "not a number" be represented?
+
+A: There is no representation for infinity or negative infinity or "not a number".
+   At this time, only decimal point notation is allowed, a plus or a minus,
+   followed by any number of numeric characters,
+   followed by a period and any number of numeric characters.
+   Whitespace is not allowed.
+   The range of allowable values is implementation-dependent, is not specified.
+
+		# int
+		'+0' => 0
+		'-0' => 0
+		'+1234567' => 1234567
+		'0777' => 777
+		'0000000000000' => 0
+		'0000000000000000000000000000000000000000000000000' => 0
+		# not int
+		'999999999999999999999999999999999999';
+
+=cut
+		elsif ($p =~ m/^([\-+]?)\d+(\.\d+|)$/) {
+			my ($have_sign,$is_double) = ($1,$2);
+			if ( $is_double ) {
+				my $v = XML::LibXML::Element->new('double');
+				$v->appendText( $p );
+				$r->appendChild($v);
+			}
+			else {
+				my $v;
+				# TODO: should we pass sign "+"?
+				if( $p == unpack "l", pack "l", $p ) {
+					# i4
+					$v = XML::LibXML::Element->new('i4');
+					$v->appendText(int $p);
+				}
+				elsif ( _HAVE_BIGINT and $p == unpack "q", pack "q", $p ) {
+					# i8
+					$v = XML::LibXML::Element->new('i8');
+					$v->appendText(int $p);
+				}
+				elsif ( !_HAVE_BIGINT and abs( my $bi = Math::BigInt->new($p) ) < _MAX_BIGINT ) {
+					$v = XML::LibXML::Element->new('i8');
+					$v->appendText($bi->bstr);
+				}
+				else {
+					# string
+					$v = XML::LibXML::Element->new('string');
+					$v->appendText($p);
+				}
+				$r->appendChild($v);
+			}
 		}
 		else {
 			my $v = XML::LibXML::Element->new('string');

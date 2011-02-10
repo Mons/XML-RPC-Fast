@@ -1,8 +1,9 @@
 # XML::RPC::Fast history
 
-0.7   2011-02-04
+0.7   2011-02-10
       * Add WWW::Curl useragent (faster than LWP)
       * Add ability to redefine call url via encoder
+      * Fix encoding of large integers
 
 0.6   2009-09-04
       * Fixes (thanks to Marko Nordberg for reports)

@@ -1,4 +1,4 @@
-.cvsignore
+.gitignore
 Changes
 ex/anyevent-client-gv.pl
 ex/anyevent-client.pl

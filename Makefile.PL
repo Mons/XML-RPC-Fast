@@ -28,49 +28,11 @@ recommends 'AnyEvent', '5.0';
 recommends 'AnyEvent::HTTP';
 recommends 'WWW::Curl';
 
+if (!eval { my $x = pack 'q', -1; 1 }) {
+	requires 'Math::BigInt';
+}
 
 auto_provides;
-=for rem
-provides 'XML::RPC::Fast' => {
-	version => $v,
-	file    => 'lib/XML/RPC/Fast.pm',
-};
-
-provides 'XML::RPC::Enc' => {
-	version => $v,
-	file    => 'lib/XML/RPC/Enc.pm',
-};
-
-provides 'XML::RPC::UA' => {
-	version => $v,
-	file    => 'lib/XML/RPC/UA.pm',
-};
-
-provides 'XML::RPC::Enc::LibXML' => {
-	version => $v,
-	file    => 'lib/XML/RPC/Enc/LibXML.pm',
-};
-
-provides 'XML::RPC::UA::LWP' => {
-	version => $v,
-	file    => 'lib/XML/RPC/UA/LWP.pm',
-};
-
-provides 'XML::RPC::UA::AnyEvent' => {
-	version => $v,
-	file    => 'lib/XML/RPC/UA/AnyEvent.pm',
-};
-
-provides 'XML::RPC::UA::AnyEventSync' => {
-	version => $v,
-	file    => 'lib/XML/RPC/UA/AnyEventSync.pm',
-};
-
-provides 'XML::RPC::UA::Curl' => {
-	version => $v,
-	file    => 'lib/XML/RPC/UA/Curl.pm',
-};
-=cut
 auto_install;
 
 WriteAll;

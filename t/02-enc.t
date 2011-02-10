@@ -7,15 +7,12 @@ use XML::Hash::LX 0.05;
 use Test::More;
 use Test::NoWarnings;
 use Encode;
-use Data::Dumper;$Data::Dumper::Useqq=1;
 BEGIN{
 	binmode Test::More->builder->$_, ':utf8'
 		for qw(failure_output todo_output output);
 }
-sub dd(@) { Dumper (@_) }
-# Encoder
 
-plan tests => 36;
+plan tests => 42;
 
 my $enc = XML::RPC::Enc::LibXML->new(
 	internal_encoding => 'utf8',
@@ -36,26 +33,26 @@ is
 	$xml = $enc->request( test => () ),
 	$hd."<methodCall><methodName>test</methodName><params/></methodCall>\n",
 	'undef args',
-	or diag dd ($xml)
+	or diag explain ($xml)
 ;
 is_deeply
 	$data = [ $enc->decode($xml) ],
 	[ test => () ],
 	'decode empty',
-	or diag dd $data
+	or diag explain $data
 ;
 
 is
 	$xml = $enc->request( test => bless( \do {my $o}, 'custom' ) ),
 	$hd."<methodCall><methodName>test</methodName><params><param><value><custom/></value></param></params></methodCall>\n",
 	'custom undef args',
-	or diag dd ($xml)
+	or diag explain ($xml)
 ;
 is_deeply
 	$data = [ $enc->decode($xml) ],
 	[ test => bless( \do {my $o}, 'custom' ) ],
 	'decode empty custom',
-	or diag dd $data
+	or diag explain $data
 ;
 
 is_deeply xml2hash( $enc->request( test => 1 ) ),
@@ -77,7 +74,7 @@ is_deeply xml2hash( $xml = $enc->request( test => { a => 1 } ) ),
 is $xml,
 	$hd."<methodCall><methodName>test</methodName><params><param><value><struct><member><name>a</name><value><i4>1</i4></value></member></struct></value></param></params></methodCall>\n",
 	'request xml struct'
-	or diag dd $xml
+	or diag explain $xml
 ;
 
 is_deeply xml2hash( $enc->request( test => [ 1,2 ] ) ),
@@ -113,6 +110,30 @@ is_deeply xml2hash( $enc->response( 1.1 ) ),
 is_deeply xml2hash( $enc->response( 'z' ) ),
 	{ methodResponse => { params => { param => { value => { string => 'z' } } } } },
 	'response string';
+is_deeply $data = xml2hash( $enc->response( "5000000000" ) ),
+	{ methodResponse => { params => { param => { value => { i8 => "5000000000" } } } } },
+	'response i8'
+	or diag explain $data;
+is_deeply $data = xml2hash( $enc->response( "-5000000000" ) ),
+	{ methodResponse => { params => { param => { value => { i8 => "-5000000000" } } } } },
+	'response -i8'
+	or diag explain $data;
+is_deeply $data = xml2hash( $enc->response( "500000000000000000000" ) ),
+	{ methodResponse => { params => { param => { value => { string => "500000000000000000000" } } } } },
+	'response very big integer'
+	or diag explain $data;
+is_deeply $data = xml2hash( $enc->response( "+111111111111111111111111111.1111111111111111111111111" ) ),
+	{ methodResponse => { params => { param => { value => { double => "+111111111111111111111111111.1111111111111111111111111" } } } } },
+	'response big double'
+	or diag explain $data;
+is_deeply $data = xml2hash( $enc->response( "+0" ) ),
+	{ methodResponse => { params => { param => { value => { i4 => "0" } } } } },
+	'response +0'
+	or diag explain $data;
+is_deeply $data = xml2hash( $enc->response( "-0" ) ),
+	{ methodResponse => { params => { param => { value => { i4 => "0" } } } } },
+	'response -0'
+	or diag explain $data;
 
 is_deeply xml2hash( $enc->fault( 555,'test' ) ),
 	{ methodResponse => { fault => { value => { struct => { member => [
@@ -162,13 +183,13 @@ is_deeply [ $enc->decode( ( $enc->request( test => bless( do{\(my $o = '12345')}
 is_deeply $data = [ $enc->decode( ( $xml = $enc->request( test => bless( do{\(my $o = {a => 1})}, 'custom' ) ) ) ) ],
 	[ test => bless(do{\(my $o = {a => 1})}, 'custom') ],
 	'decode custom bless struct',
-	or diag Dumper($xml,$data)
+	or diag explain($xml,$data)
 ;
 
 is_deeply $data = [ $enc->decode( ( $xml = $enc->request( test => { a => 1 } ) ) ) ],
 	[ test => { a => 1 } ],
 	'decode struct',
-	or diag Dumper($xml,$data)
+	or diag explain($xml,$data)
 ;
 
 SKIP : {
@@ -191,7 +212,7 @@ SKIP : {
 	is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="UTF-8"?><methodResponse xmlns:ex="http://ws.apache.org/xmlrpc/namespaces/extensions"><params><param><value><struct><member><name>status</name><value>noError</value></member></struct></value></param></params></methodResponse>} ) ],
 		[ { status => 'noError' } ],
 		'decode 1',
-		or diag Dumper($data)
+		or diag explain($data)
 	;
 }
 {
@@ -199,7 +220,7 @@ SKIP : {
 	is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>bss.storeDataStorage</methodName><params><param><value><struct><member><name>value</name><value><string>€€€</string></value></member><member><name>name</name><value><string>test</string></value></member></struct></value></param></params></methodCall>} ) ],
 		[ 'bss.storeDataStorage' => { name => 'test', value => "\x{20ac}\x{20ac}\x{20ac}", } ],
 		'decode 2',
-		or diag Dumper($data)
+		or diag explain($data)
 	;
 }
 
@@ -208,25 +229,25 @@ SKIP : {
 	is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "\x{20ac}\x{20ac}\x{20ac}", } )),
 		320,
 		'utf8 xml content length'
-		or diag dd $data, $xml;
+		or diag explain $data, $xml;
 }
 
 is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "€€€", } )),
 	320,
 	'inplace octets xml content length'
-	or diag dd $data, $xml;
+	or diag explain $data, $xml;
 
 is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'test', value => "\342\202\254\342\202\254\342\202\254", } )),
 	320,
 	'octets xml content length'
-	or diag dd $data, $xml;
+	or diag explain $data, $xml;
 
 {
 	local $enc->{internal_encoding} = undef;
 	is_deeply $data = [ $enc->decode( q{<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>storeDataStorage</methodName><params><param><value><struct><member><name>value</name><value><string>ÄÄÄ</string></value></member><member><name>name</name><value><string>test</string></value></member></struct></value></param></params></methodCall>} ) ],
 		[ storeDataStorage => { name => 'test', value => "\x{c4}\x{c4}\x{c4}", }],
 		'decode 3',
-		or diag Dumper($data)
+		or diag explain($data)
 	;
 }
 
@@ -235,7 +256,7 @@ is $data = length($xml = $enc->request( 'bss.storeDataStorage' => { name => 'tes
 	is_deeply $data = [ $enc->decode( qq{$hd<methodResponse><params><param><value><array/></value></param></params></methodResponse>} ) ],
 		[ [] ],
 		'decode 4',
-		or diag Dumper($data)
+		or diag explain($data)
 	;
 }
 
