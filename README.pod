@@ -222,6 +222,10 @@ When passing SCALARREF as a value, package name will be taken as type and derefe
 
 When passing REFREF as a value, package name will be taken as type and L<XML::Hash::LX>C<::hash2xml(deref)> would be used as value
 
+=head2 customtype( $type, $data )
+
+Easily compose SCALARREF based custom type
+
 
 =cut
 

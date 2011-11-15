@@ -200,6 +200,9 @@ CUSTOM TYPES
     When passing REFREF as a value, package name will be taken as type and
     XML::Hash::LX"::hash2xml(deref)" would be used as value
 
+  customtype( $type, $data )
+    Easily compose SCALARREF based custom type
+
 BUGS & SUPPORT
     Bugs reports and testcases are welcome.
 

@@ -12,7 +12,7 @@ XML::RPC::Fast - Fast and modular implementation for an XML-RPC client and serve
 
 =cut
 
-our $VERSION   = '0.7'; $VERSION = eval $VERSION;
+our $VERSION   = '0.7_01'; $VERSION = eval $VERSION;
 
 =head1 SYNOPSIS
 
@@ -231,6 +231,10 @@ When passing SCALARREF as a value, package name will be taken as type and derefe
 
 When passing REFREF as a value, package name will be taken as type and L<XML::Hash::LX>C<::hash2xml(deref)> would be used as value
 
+=head2 customtype( $type, $data )
+
+Easily compose SCALARREF based custom type
+
 =cut
 
 use 5.008003; # I want Encode to work
@@ -268,7 +272,7 @@ sub import {
 	no strict 'refs';
 	@_ or return;
 	for (@_) {
-		if ( $_ eq 'rpcfault') {
+		if ( $_ eq 'rpcfault' or $_ eq 'customtype') {
 			*{$pkg.'::'.$_} = \&$_;
 		} else {
 			croak "$_ is not exported by $me";
@@ -276,7 +280,7 @@ sub import {
 	}
 }
 
-sub rpcfault {
+sub rpcfault($$) {
 	my ($code,$string) = @_;
 	return {
 		fault => {
@@ -284,6 +288,11 @@ sub rpcfault {
 			faultString => $string,
 		},
 	}
+}
+sub customtype($$) {
+	my $type = shift;
+	my $data = shift;
+	bless( do{\(my $o = $data )}, $type )
 }
 
 sub _load {
@@ -409,6 +418,7 @@ sub req {
 					({fault=>{ faultCode => 499,        faultString => "Call to $uri failed: Response is not an XML: \"$text\"" }})
 					and last;
 				eval {
+					$self->{xml_in} = $text;
 					@data = $self->encoder->decode( $text );
 					1;
 				} or @data = 

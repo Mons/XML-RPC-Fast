@@ -5,14 +5,15 @@ author:
   - 'Mons Anderson <mons@cpan.org>'
 build_requires:
   Encode: 0
-  ExtUtils::MakeMaker: 6.42
+  ExtUtils::MakeMaker: 6.57
   Test::More: 0
   Test::NoWarnings: 0
   lib::abs: 0.90
 configure_requires:
-  ExtUtils::MakeMaker: 6.42
+  ExtUtils::MakeMaker: 6.57
 distribution_type: module
-generated_by: 'Module::Install version 1.00'
+dynamic_config: 1
+generated_by: 'Module::Install version 1.04'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -32,7 +33,7 @@ provides:
     version: 0
   XML::RPC::Fast:
     file: lib/XML/RPC/Fast.pm
-    version: 0.7
+    version: 0.701
   XML::RPC::UA:
     file: lib/XML/RPC/UA.pm
     version: 0
@@ -65,4 +66,4 @@ requires:
   perl: 5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.7
+version: 0.701
