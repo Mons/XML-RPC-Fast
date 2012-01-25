@@ -5,12 +5,12 @@ author:
   - 'Mons Anderson <mons@cpan.org>'
 build_requires:
   Encode: 0
-  ExtUtils::MakeMaker: 6.57
+  ExtUtils::MakeMaker: 6.62
   Test::More: 0
   Test::NoWarnings: 0
   lib::abs: 0.90
 configure_requires:
-  ExtUtils::MakeMaker: 6.57
+  ExtUtils::MakeMaker: 6.62
 distribution_type: module
 dynamic_config: 1
 generated_by: 'Module::Install version 1.04'
@@ -33,7 +33,7 @@ provides:
     version: 0
   XML::RPC::Fast:
     file: lib/XML/RPC/Fast.pm
-    version: 0.701
+    version: 0.8
   XML::RPC::UA:
     file: lib/XML/RPC/UA.pm
     version: 0
@@ -66,4 +66,4 @@ requires:
   perl: 5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.701
+version: 0.8

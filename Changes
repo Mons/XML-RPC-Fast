@@ -1,5 +1,10 @@
 # XML::RPC::Fast history
 
+0.8   2012-01-25
+      * fix Curl
+      * fix encoding of large integers
+      * customtype generator
+
 0.7   2011-02-10
       * Add WWW::Curl useragent (faster than LWP)
       * Add ability to redefine call url via encoder
