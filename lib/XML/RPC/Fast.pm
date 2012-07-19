@@ -12,7 +12,7 @@ XML::RPC::Fast - Fast and modular implementation for an XML-RPC client and serve
 
 =cut
 
-our $VERSION   = '0.8'; $VERSION = eval $VERSION;
+our $VERSION   = '0.9'; $VERSION = eval $VERSION;
 
 =head1 SYNOPSIS
 
@@ -398,6 +398,7 @@ sub req {
 	}
 
 	$self->{xml_out} = $body;
+	utf8::encode($body) if utf8::is_utf8($body);
 
 	#my $start = time;
 	my @data;
@@ -410,9 +411,10 @@ sub req {
 			my $res = shift;
 			{
 				( my $status = $res->status_line )=~ s/:?\s*$//s;
-				$res->code == 200 or @data = 
-					(rpcfault( $res->code, "Call to $uri failed: $status" ))
-					and last;
+				$res->code == 200 or do{
+						warn "Call to $url failed\n$body\n$status\n".$res->content;
+						@data =  ({fault=>{ faultCode => $res->code, faultString => "Call to $uri failed: $status" }});
+					1 } and last;
 				my $text = $res->content;
 				length($text) and $text =~ /^\s*<\?xml/s or @data = 
 					({fault=>{ faultCode => 499,        faultString => "Call to $uri failed: Response is not an XML: \"$text\"" }})

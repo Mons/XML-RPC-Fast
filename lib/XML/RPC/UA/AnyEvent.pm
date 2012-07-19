@@ -77,17 +77,19 @@ sub call {
 	my ($method, $url) = splice @_,0,2;
 	my %args = @_;
 	$args{cb} or croak "cb required for useragent @{[%args]}";
-	#warn "call";
-	http_request
-		$method => $url,
-		headers => {
+	my $headers = {
 			'Content-Type'   => 'text/xml',
 			'User-Agent'     => $$self,
 			do { use bytes; ( 'Content-Length' => length($args{body}) ) },
 			%{$args{headers} || {}},
-		},
+		};
+	#warn "call $url { @{[ %$headers ]} } ... ";
+	http_request
+		$method => $url,
+		headers => $headers,
 		body => $args{body},
 		cb => sub {
+			#warn "call $url result: {@{[ %{$_[1]} ]}} $_[0]";
 			$args{cb}( HTTP::Response->new(
 				$_[1]{Status},
 				$_[1]{Reason},
